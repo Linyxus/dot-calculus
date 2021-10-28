@@ -119,58 +119,6 @@ Lemma typ_p_bound_deterministic : forall G0,
 Proof.
 Admitted.
 
-Lemma subtyp_p_trans_typ : forall G0,
-    inert G0 ->
-    (forall A S1 T1 S2 T2 U,
-        G0 ⊢! typ_rcd (dec_typ A S1 T1) <: U ->
-        G0 ⊢! U <: typ_rcd (dec_typ A S2 T2) ->
-        G0 ⊢! typ_rcd (dec_typ A S1 T1) <: typ_rcd (dec_typ A S2 T2)).
-Proof.
-  intros G0 Hi.
-  intros A S1 T1 S2 T2 U H1 H2.
-  generalize dependent S2. generalize dependent T2.
-  remember (typ_rcd (dec_typ A S1 T1)) as Obj1 in H1.
-  induction H1.
-  - intros T2 S2 H.
-    inversion H.
-  - intros T2 S2 H.
-    inversion HeqObj1.
-  - intros T2 S2 H.
-    subst T. auto.
-  - inversion HeqObj1.
-  - inversion HeqObj1.
-  - specialize (IHsubtyp_p1 Hi HeqObj1). specialize (IHsubtyp_p2 Hi HeqObj1).
-    intros T2 S2 H.
-    inversion H; subst.
-    {
-      specialize (IHsubtyp_p1 T2 S2 H4). auto.
-    }
-    {
-      specialize (IHsubtyp_p2 T2 S2 H4). auto.
-    }
-  - inversion HeqObj1.
-  - intros T2 S2 Hsub.
-    specialize (IHsubtyp_p Hi HeqObj1 T2 S2).
-    inversion Hsub; subst.
-    assert (T = T0) as Teq.
-      eapply typ_p_bound_deterministic.
-        apply Hi.
-        apply H.
-        apply H4.
-    subst T0.
-    specialize (IHsubtyp_p H6). auto.
-  - inversion HeqObj1.
-  - intros T3 S3 Hsub.
-    inversion HeqObj1. subst. clear HeqObj1.
-    apply (subtyp_p_decompose_typ Hi) in Hsub. destruct Hsub as [H1 H2].
-    assert (G ⊢ S3 <: S1) as Hb1.
-      eauto.
-    assert (G ⊢ T1 <: T3) as Hb2.
-      eauto.
-    eauto.
-  - inversion HeqObj1.
-Qed.
-
 Lemma destruct_sub_p_and : forall G S T U,
     G ⊢! typ_and S T <: U ->
     (G ⊢! S <: U \/ G ⊢! T <: U \/ U = typ_and S T).
@@ -407,40 +355,56 @@ Proof.
   - intros. admit.
 Admitted.
 
-Lemma tight_to_prec_sub_typ__l : forall G0,
-    inert G0 ->
-    (forall A S T U,
-        G0 ⊢# typ_rcd (dec_typ A S T) <: U ->
-        G0 ⊢! typ_rcd (dec_typ A S T) <: U).
-Proof.
-  intros.
-  remember (typ_rcd (dec_typ A S T)) as Obj in H0.
-  induction H0.
-  - auto.
-  - rewrite <- HeqObj. auto.
-  - subst T0. auto.
-  - specialize (IHsubtyp_t1 H HeqObj).
-Admitted.
+(** * Legacy *)
 
-Lemma tight_to_prec_sub_typ: forall G0,
+Lemma subtyp_p_trans_typ : forall G0,
     inert G0 ->
-    (forall S T A S1 T1 S2 T2,
-        G0 ⊢# S <: T ->
-        S = typ_rcd (dec_typ A S1 T1) ->
-        T = typ_rcd (dec_typ A S2 T2) ->
-        G0 ⊢! S <: T).
+    (forall A S1 T1 S2 T2 U,
+        G0 ⊢! typ_rcd (dec_typ A S1 T1) <: U ->
+        G0 ⊢! U <: typ_rcd (dec_typ A S2 T2) ->
+        G0 ⊢! typ_rcd (dec_typ A S1 T1) <: typ_rcd (dec_typ A S2 T2)).
 Proof.
-  intros.
-  generalize dependent A.
-  generalize dependent S1.
-  generalize dependent S2.
-  generalize dependent T1.
-  generalize dependent T2.
-  induction H0.
-  - intros. inversion H2.
-  - intros. inversion H1.
-  - intros. auto.
-  - intros.
-    specialize (IHsubtyp_t1 H). specialize (IHsubtyp_t2 H).
-Admitted.
-
+  intros G0 Hi.
+  intros A S1 T1 S2 T2 U H1 H2.
+  generalize dependent S2. generalize dependent T2.
+  remember (typ_rcd (dec_typ A S1 T1)) as Obj1 in H1.
+  induction H1.
+  - intros T2 S2 H.
+    inversion H.
+  - intros T2 S2 H.
+    inversion HeqObj1.
+  - intros T2 S2 H.
+    subst T. auto.
+  - inversion HeqObj1.
+  - inversion HeqObj1.
+  - specialize (IHsubtyp_p1 Hi HeqObj1). specialize (IHsubtyp_p2 Hi HeqObj1).
+    intros T2 S2 H.
+    inversion H; subst.
+    {
+      specialize (IHsubtyp_p1 T2 S2 H4). auto.
+    }
+    {
+      specialize (IHsubtyp_p2 T2 S2 H4). auto.
+    }
+  - inversion HeqObj1.
+  - intros T2 S2 Hsub.
+    specialize (IHsubtyp_p Hi HeqObj1 T2 S2).
+    inversion Hsub; subst.
+    assert (T = T0) as Teq.
+      eapply typ_p_bound_deterministic.
+        apply Hi.
+        apply H.
+        apply H4.
+    subst T0.
+    specialize (IHsubtyp_p H6). auto.
+  - inversion HeqObj1.
+  - intros T3 S3 Hsub.
+    inversion HeqObj1. subst. clear HeqObj1.
+    apply (subtyp_p_decompose_typ Hi) in Hsub. destruct Hsub as [H1 H2].
+    assert (G ⊢ S3 <: S1) as Hb1.
+      eauto.
+    assert (G ⊢ T1 <: T3) as Hb2.
+      eauto.
+    eauto.
+  - inversion HeqObj1.
+Qed.
