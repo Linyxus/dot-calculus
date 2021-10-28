@@ -314,7 +314,20 @@ Lemma destruct_sel_sub_p2 : forall G0,
         G0 ⊢! x: U ⪼ typ_rcd (dec_typ A T T) ->
         G0 ⊢! typ_sel (avar_f x) A <: S ->
         G0 ⊢! T <: S).
-Admitted.
+Proof.
+  intros G0 H0 x A U T S H1 H2.
+  remember (typ_sel (avar_f x) A) as Sel1 in H2.
+  rename HeqSel1 into Heq.
+  induction H2; eauto; try inversion Heq; eauto.
+  - subst. clear Heq.
+    specialize (IHsubtyp_p H0 H1).
+    assert (T = T0) as Heq.
+    {
+      eapply subtyp_sel_p_alias_deterministic. apply H0.
+      apply H1. apply H.
+    }
+    subst T0. auto.
+Qed.
 
 Lemma destruct_top_sub_T_p : forall G0,
     inert G0 ->
