@@ -104,42 +104,6 @@ where "G '⊢!' T '<:' U" := (subtyp_p G T U).
 
 Hint Constructors subtyp_p.
 
-Lemma destruct_subtyp_typ_p : forall G0,
-    inert G0 ->
-    (forall A S1 T1 S2 T2,
-        G0 ⊢! typ_rcd (dec_typ A S1 T1) <: typ_rcd (dec_typ A S2 T2) ->
-        (G0 ⊢# S2 <: S1 /\ G0 ⊢# T1 <: T2)).
-Proof.
-  intros G0 H0 A S1 T1 S2 T2 H.
-  inversion H; subst; auto.
-Qed.
-
-Lemma destruct_subtyp_typ_p_label : forall G0,
-    inert G0 ->
-    (forall A B S1 T1 S2 T2,
-        G0 ⊢! typ_rcd (dec_typ A S1 T1) <: typ_rcd (dec_typ B S2 T2) ->
-        A = B).
-Proof.
-  intros G0 H0 A B S1 T1 S2 T2 H.
-  remember (typ_rcd (dec_typ A S1 T1)) as Obj1 in H.
-  remember (typ_rcd (dec_typ B S2 T2)) as Obj2 in H.
-  rename HeqObj1 into Heq1.
-  rename HeqObj2 into Heq2.
-  induction H.
-  - (* top *) inversion Heq2.
-  - (* bot *) inversion Heq1.
-  - (* refl *) subst T. inversion Heq2. trivial.
-  - (* And1-<: *) inversion Heq1.
-  - (* And2-<: *) inversion Heq1.
-  - (* <:-And *) inversion Heq2.
-  - (* Fld-<:-Fld *) inversion Heq1.
-  - (* <:-Sel *) inversion Heq2.
-  - (* Sel-<: *) inversion Heq1.
-  - (* Typ-<:-Typ *) inversion Heq1. inversion Heq2. subst.
-    trivial.
-  - (* All-<:-All *) inversion Heq1.
-Qed.
-
 Lemma subtyp_sel_p_alias_deterministic : forall G0,
     inert G0 ->
     (forall x A U1 U2 T1 T2,
@@ -433,6 +397,43 @@ Proof.
   - (* All-<:-All *) inversion Heq.
 Qed.
 
+Lemma destruct_subtyp_typ_p_label : forall G0,
+    inert G0 ->
+    (forall A B S1 T1 S2 T2,
+        G0 ⊢! typ_rcd (dec_typ A S1 T1) <: typ_rcd (dec_typ B S2 T2) ->
+        A = B).
+Proof.
+  intros G0 H0 A B S1 T1 S2 T2 H.
+  remember (typ_rcd (dec_typ A S1 T1)) as Obj1 in H.
+  remember (typ_rcd (dec_typ B S2 T2)) as Obj2 in H.
+  rename HeqObj1 into Heq1.
+  rename HeqObj2 into Heq2.
+  induction H.
+  - (* top *) inversion Heq2.
+  - (* bot *) inversion Heq1.
+  - (* refl *) subst T. inversion Heq2. trivial.
+  - (* And1-<: *) inversion Heq1.
+  - (* And2-<: *) inversion Heq1.
+  - (* <:-And *) inversion Heq2.
+  - (* Fld-<:-Fld *) inversion Heq1.
+  - (* <:-Sel *) inversion Heq2.
+  - (* Sel-<: *) inversion Heq1.
+  - (* Typ-<:-Typ *) inversion Heq1. inversion Heq2. subst.
+    trivial.
+  - (* All-<:-All *) inversion Heq1.
+Qed.
+
+Lemma destruct_subtyp_typ_p : forall G0,
+    inert G0 ->
+    (forall A S1 T1 S2 T2,
+        G0 ⊢! typ_rcd (dec_typ A S1 T1) <: typ_rcd (dec_typ A S2 T2) ->
+        (G0 ⊢# S2 <: S1 /\ G0 ⊢# T1 <: T2)).
+Proof.
+  intros G0 H0 A S1 T1 S2 T2 H.
+  inversion H; subst; auto.
+Qed.
+
+
 Lemma trans_intt : forall G0,
     inert G0 ->
     (forall A S1 T1 S2 T2 U,
@@ -679,9 +680,6 @@ Proof.
   induction H; eauto.
 Qed.
 
-Hint Resolve destruct_subtyp_typ_p.
-Hint Resolve prec_to_tight.
-Hint Resolve tight_to_prec.
 
 
 Theorem destruct_subtyp_typ_t : forall G0,
@@ -692,3 +690,4 @@ Theorem destruct_subtyp_typ_t : forall G0,
 Proof.
   eauto.
 Qed.
+
