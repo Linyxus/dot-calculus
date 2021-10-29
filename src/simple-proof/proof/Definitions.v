@@ -131,6 +131,10 @@ Inductive rcd_with_unique_typ : typ -> fset typ_label -> typ -> Prop :=
 Hint Constructors rcd_with_unique_typ.
 
 
+Definition rcd_has_uniq_tm U A S T :=
+  exists L, rcd_with_unique_typ U L (typ_rcd (dec_typ A S T)).
+
+
 (** Helper functions to retrieve labels of declarations and definitions *)
 
 Definition label_of_def(d: def): label := match d with
@@ -472,18 +476,24 @@ with subtyp : ctx -> typ -> typ -> Prop :=
     G ⊢ T1 <: T2 ->
     G ⊢ typ_rcd (dec_typ A S1 T1) <: typ_rcd (dec_typ A S2 T2)
 
-(** [G ⊢ {A: S1..T1} <: {A: S2..T2}]                   #<br>#
+(** [G ⊢ U1 <: U2]                   #<br>#
+    [rcd_has_uniq_tm U1 A S1 T1]       #<br>#
+    [rcd_has_uniq_tm U2 A S2 T2]       #<br>#
     [――――――――――――――――――――――――――――――] #<br>#
     [G ⊢ S2 <: S1]     *)
-| subtyp_typ_inv1: forall G A S1 T1 S2 T2,
-    G ⊢ typ_rcd (dec_typ A S1 T1) <: typ_rcd (dec_typ A S2 T2) ->
+| subtyp_rcd_inv1: forall G U1 U2 A S1 T1 S2 T2,
+    G ⊢ U1 <: U2 ->
+    rcd_has_uniq_tm U1 A S1 T1 ->
+    rcd_has_uniq_tm U2 A S2 T2 ->
     G ⊢ S2 <: S1
 
 (** [G ⊢ {A: S1..T1} <: {A: S2..T2}]                   #<br>#
     [――――――――――――――――――――――――――――――] #<br>#
     [G ⊢ T1 <: T2]     *)
-| subtyp_typ_inv2: forall G A S1 T1 S2 T2,
-    G ⊢ typ_rcd (dec_typ A S1 T1) <: typ_rcd (dec_typ A S2 T2) ->
+| subtyp_rcd_inv2: forall G U1 U2 A S1 T1 S2 T2,
+    G ⊢ U1 <: U2 ->
+    rcd_has_uniq_tm U1 A S1 T1 ->
+    rcd_has_uniq_tm U2 A S2 T2 ->
     G ⊢ T1 <: T2
 
 (** [G ⊢ x: {A: S..T}] #<br>#

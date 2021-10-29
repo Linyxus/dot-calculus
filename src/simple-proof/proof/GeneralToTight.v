@@ -88,10 +88,20 @@ Lemma general_to_tight: forall G0,
 Proof.
   intros G0 HG.
   apply ts_mutind; intros; subst; try solve [eapply sel_replacement; auto]; eauto.
-  - assert (G0 = G0) as Heq. trivial. specialize (H Heq).
-    apply destruct_subtyp_typ_t in H. destruct H as [H _]. auto. auto.
-  - assert (G0 = G0) as Heq. trivial. specialize (H Heq).
-    apply destruct_subtyp_typ_t in H. destruct H as [_ H]. auto. auto.
+  - assert (G0 = G0) as Heq; trivial. specialize (H Heq).
+    assert (G0 ⊢# S2 <: S1 /\ G0 ⊢# T1 <: T2).
+    {
+      eapply destruct_subtyp_rcd_t. apply HG.
+      apply r. apply r0. apply H.
+    }
+    destruct H0 as [H0 _]. exact H0.
+  - assert (G0 = G0) as Heq; trivial. specialize (H Heq).
+    assert (G0 ⊢# S2 <: S1 /\ G0 ⊢# T1 <: T2).
+    {
+      eapply destruct_subtyp_rcd_t. apply HG.
+      apply r. apply r0. apply H.
+    }
+    destruct H0 as [_ H0]. exact H0.
 Qed.
 
 (** The general-to-tight lemma, formulated for term typing. *)

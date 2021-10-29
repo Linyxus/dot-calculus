@@ -133,10 +133,6 @@ Proof.
     + specialize (IHHu2 H HeqTr). auto.
 Qed.
 
-Definition rcd_has_uniq_tm U A S T :=
-  exists L, rcd_with_unique_typ U L (typ_rcd (dec_typ A S T)).
-
-
 Lemma sub_p_reduce_rcd_both : forall G U1 U2 A S1 T1 S2 T2,
     rcd_has_uniq_tm U1 A S1 T1 ->
     rcd_has_uniq_tm U2 A S2 T2 ->
