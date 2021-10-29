@@ -9,6 +9,7 @@ Set Implicit Arguments.
 Require Import TLC.LibLN.
 Require Import Coq.Program.Equality.
 Require Import Definitions RecordAndInertTypes PreciseTyping TightTyping InvertibleTyping.
+Require Import PreciseSubtyping.
 
 (** * Sel-<: Premise
     This lemma corresponds to Lemma 3.5 in the paper.
@@ -87,6 +88,10 @@ Lemma general_to_tight: forall G0,
 Proof.
   intros G0 HG.
   apply ts_mutind; intros; subst; try solve [eapply sel_replacement; auto]; eauto.
+  - assert (G0 = G0) as Heq. trivial. specialize (H Heq).
+    apply destruct_subtyp_typ_t in H. destruct H as [H _]. auto. auto.
+  - assert (G0 = G0) as Heq. trivial. specialize (H Heq).
+    apply destruct_subtyp_typ_t in H. destruct H as [_ H]. auto. auto.
 Qed.
 
 (** The general-to-tight lemma, formulated for term typing. *)
