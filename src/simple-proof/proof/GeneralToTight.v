@@ -9,7 +9,7 @@ Set Implicit Arguments.
 Require Import TLC.LibLN.
 Require Import Coq.Program.Equality.
 Require Import Definitions RecordAndInertTypes PreciseTyping TightTyping InvertibleTyping.
-Require Import PreciseSubtyping.
+Require Import Decompose.
 
 (** * Sel-<: Premise
     This lemma corresponds to Lemma 3.5 in the paper.

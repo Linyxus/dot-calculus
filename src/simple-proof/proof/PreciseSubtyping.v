@@ -397,13 +397,11 @@ Proof.
   - (* All-<:-All *) inversion Heq.
 Qed.
 
-Lemma destruct_subtyp_typ_p_label : forall G0,
-    inert G0 ->
-    (forall A B S1 T1 S2 T2,
-        G0 ⊢! typ_rcd (dec_typ A S1 T1) <: typ_rcd (dec_typ B S2 T2) ->
-        A = B).
+Lemma destruct_subtyp_typ_p_label : forall G0 A B S1 T1 S2 T2,
+    G0 ⊢! typ_rcd (dec_typ A S1 T1) <: typ_rcd (dec_typ B S2 T2) ->
+    A = B.
 Proof.
-  intros G0 H0 A B S1 T1 S2 T2 H.
+  intros H0 A B S1 T1 S2 T2 H.
   remember (typ_rcd (dec_typ A S1 T1)) as Obj1 in H.
   remember (typ_rcd (dec_typ B S2 T2)) as Obj2 in H.
   rename HeqObj1 into Heq1.
@@ -448,7 +446,7 @@ Proof.
   - (* typ *)
     assert (A = A0) as Heq.
     {
-      eapply destruct_subtyp_typ_p_label. apply H0.
+      eapply destruct_subtyp_typ_p_label.
       apply H.
     }
     assert (G0 ⊢# S <: S2 /\ G0 ⊢# T2 <: T) as Hsub.
@@ -680,14 +678,34 @@ Proof.
   induction H; eauto.
 Qed.
 
+Hint Resolve destruct_subtyp_typ_p.
+Hint Resolve prec_to_tight.
+Hint Resolve tight_to_prec.
 
 
-Theorem destruct_subtyp_typ_t : forall G0,
-    inert G0 ->
-    (forall A S1 T1 S2 T2,
-        G0 ⊢# typ_rcd (dec_typ A S1 T1) <: typ_rcd (dec_typ A S2 T2) ->
-        G0 ⊢# S2 <: S1 /\ G0 ⊢# T1 <: T2).
+Lemma destruct_subtyp_and2_p : forall G S T U,
+    G ⊢! S <: typ_and T U ->
+    G ⊢! S <: T /\ G ⊢! S <: U.
 Proof.
-  eauto.
+  intros G S T U H.
+  remember (typ_and T U) as And2.
+  rename HeqAnd2 into Heq.
+  induction H.
+  - (* top *) inversion Heq.
+  - (* bot *) auto.
+  - (* refl *) subst T0. auto.
+  - (* and11 *)
+    specialize (IHsubtyp_p Heq). destruct IHsubtyp_p as [H1 H2].
+    eauto.
+  - (* and12 *)
+    specialize (IHsubtyp_p Heq). destruct IHsubtyp_p as [H1 H2].
+    eauto.
+  - (* and2 *)
+    inversion Heq; subst. auto.
+  - (* fld *) inversion Heq.
+  - (* sel2 *) inversion Heq.
+  - (* sel1 *) specialize (IHsubtyp_p Heq).
+    destruct IHsubtyp_p as [H1 H2]. eauto.
+  - (* typ *) inversion Heq.
+  - (* all *) inversion Heq.
 Qed.
-
