@@ -475,6 +475,68 @@ Proof.
 Qed.
 
 
+Lemma trans_subtyp_typ_s : forall G A S1 S2 T1 T2 U,
+    inert G ->
+    G ⊢# S2 <: S1 ->
+    G ⊢# T1 <: T2 ->
+    G ⊢{} typ_rcd {A >: S2 <: T2} <: U ->
+    G ⊢{} typ_rcd {A >: S1 <: T1} <: U.
+Proof.
+  introv Hi Hs Ht H.
+  remember (typ_rcd {A >: S2 <: T2}) as typ2 in H.
+  gen S2 T2.
+  induction H; intros.
+  - (* top *)
+    auto.
+  - (* bot *)
+    inversion Heqtyp2.
+  - (* refl *)
+    subst. eauto.
+  - (* and11 *)
+    inversion Heqtyp2.
+  - (* and12 *)
+    inversion Heqtyp2.
+  - (* and2 *)
+    specialize (IHsubtyp_s1 Hi S2 Hs T2 Ht Heqtyp2).
+    specialize (IHsubtyp_s2 Hi S2 Hs T2 Ht Heqtyp2).
+    eauto.
+  - (* fld *)
+    inversion Heqtyp2.
+  - (* typ *)
+    inversion Heqtyp2; subst. clear Heqtyp2.
+    eauto.
+  - (* sngl_pq2 *)
+    eauto.
+  - (* sngl_qp2 *)
+    eauto.
+  - (* sngl_pq1 *)
+    subst S'.
+    specialize (IHsubtyp_s Hi).
+    inversion H1; subst.
+    inversion H7; subst.
+    -- apply IHsubtyp_s with (S2 := T0) (T3 := T2); eauto.
+    -- apply IHsubtyp_s with (S3 := S2) (T2 := T0); eauto.
+       destruct repl_swap as [repl_swap _].
+       specialize (repl_swap _ _ _ _ H8).
+       eauto.
+  - (* sngl_qp1 *)
+    subst S'.
+    specialize (IHsubtyp_s Hi).
+    inversion H1; subst.
+    inversion H7; subst.
+    -- apply IHsubtyp_s with (S2 := T0) (T3 := T2); eauto.
+    -- apply IHsubtyp_s with (S3 := S2) (T2 := T0); eauto.
+       destruct repl_swap as [repl_swap _].
+       specialize (repl_swap _ _ _ _ H8). eauto.
+  - (* sel2 *)
+    eauto.
+  - (* sel1 *)
+    inversion Heqtyp2.
+  - (* all *)
+    inversion Heqtyp2.
+Qed.
+
+
 Theorem trans_subtyp_s : forall G S T U,
     inert G ->
     G ⊢{} S <: T ->
@@ -510,7 +572,11 @@ Proof.
     -- exact Hi.
     -- apply IHsubtyp_s.
     -- exact H2.
-  - (* typ *) admit.
+  - (* typ *)
+    eapply trans_subtyp_typ_s; try assumption.
+    -- apply H.
+    -- apply H0.
+    -- apply H2.
   - (* sngl_pq2 *)
     apply IHsubtyp_s. exact Hi.
     destruct repl_swap as [Hr _].
