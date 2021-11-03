@@ -344,7 +344,88 @@ Proof.
 Qed.
 
 
-Lemma invert_subtyp_sel2_p : forall G p A T U,
+Lemma pt3_trans_qp : forall G p q bs T,
+    inert G ->
+    G ⊢!!! p : {{ q }} ->
+    G ⊢!!! q •• bs : T ->
+    G ⊢!!! p •• bs : T.
+Proof.
+  apply pt3_field_trans'.
+Qed.
+
+
+Lemma pt3_trans_rcd_pq : forall G p q bs ls T,
+    inert G ->
+    G ⊢!!! p : {{ q }} ->
+    G ⊢!!! p •• bs : T ->
+    record_typ T ls ->
+    G ⊢!!! q •• bs : T.
+Proof.
+  introv Hi Hs Hf Hr.
+  pose proof pt3_inert_sngl_invert'.
+  apply H with (p := p •• bs) (ls := ls); try assumption.
+  apply pt3_trans_trans with (T := T); try assumption.
+Qed.
+
+
+Lemma invert_subtyp_sel2_p : forall G p A S T,
+    inert G ->
+    G ⊢!!! p : typ_rcd { A >: T <: T } ->
+    G ⊢{} S <: p ↓ A ->
+    G ⊢{} S <: T.
+Proof.
+  introv Hi Hp Hs.
+  remember (p ↓ A) as Sel in Hs.
+  gen p.
+  induction Hs; introv Hp He.
+  - (* top *)
+    inversion He.
+  - (* bot *)
+    auto.
+  - (* refl *)
+    subst T0. eauto.
+  - (* and11 *)
+    subst S.
+    eauto.
+  - (* and12 *)
+    subst S. eauto.
+  - (* and2 *)
+    inversion He.
+  - (* fld *)
+    inversion He.
+  - (* typ *)
+    inversion He.
+  - (* sngl_pq2 *)
+    subst T'.
+    inversion H1; subst.
+    apply IHHs with (p0 := p •• bs); try assumption; try trivial.
+    -- apply pt3_trans_qp with (q := q); try assumption.
+  - (* sngl_qp2 *)
+    subst T'.
+    inversion H1; subst.
+    apply IHHs with (p := q •• bs); try assumption; try trivial.
+    eapply pt3_trans_rcd_pq with (p := p); try assumption. eauto.
+  - (* sngl_pq1 *)
+    subst. eauto.
+  - (* sngl_qp1 *) eauto.
+  - (* sel2 *)
+    inversion He. subst.
+    assert (T = T0) as HeqT.
+    {
+      eapply pt3_rcd_unique.
+      apply Hi.
+      apply Hp.
+      apply H.
+    }
+    subst T. eauto.
+  - (* sel1 *)
+    subst S.
+    eauto.
+  - (* all *) inversion He.
+Qed.
+
+
+Lemma invert_subtyp_sel1_p : forall G p A T U,
     inert G ->
     G ⊢!!! p : typ_rcd { A >: T <: T } ->
     G ⊢{} p ↓ A <: U ->
@@ -592,10 +673,11 @@ Proof.
   - (* sngl_qp1 *)
     eauto.
   - (* sel2 *)
-    pose proof (invert_subtyp_sel2_p _ _ _ _ _ Hi H H2).
+    pose proof (invert_subtyp_sel1_p _ _ _ _ _ Hi H H2).
     eauto.
   - (* sel1 *)
-    admit.
+    specialize (IHsubtyp_s Hi).
+    eauto.
   - (* all *)
     admit.
 Admitted.
