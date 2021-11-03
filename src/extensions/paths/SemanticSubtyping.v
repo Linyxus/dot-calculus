@@ -689,10 +689,69 @@ Proof.
       }
       eapply subtyp_trans. apply Htrans2. auto.
   - (* sngl_qp1 *)
+    specialize (IHHsub Hi).
+    subst S'. inversion H1; subst.
+    -- assert (forall x, x \notin (L \u dom G) -> G & x ~ T0 ⊢ open_typ x T1 <: open_typ x T2).
+       {
+         introv Hnin.
+         apply notin_union in Hnin.
+         destruct Hnin as [Hn1 Hn2].
+         specialize (Htrans2 _ Hn1).
+         eapply narrow_subtyping.
+         - apply Htrans2.
+         - apply subenv_push.
+           -- auto.
+           -- eauto.
+           -- eauto.
+           -- pose proof (precise_to_general3 H) as Hpq.
+              pose proof (precise_to_general3 H0) as Hq.
+              eapply subtyp_sngl_qp.
+              apply Hpq. apply Hq. assumption.
+       }
+       apply IHHsub with (S2 := T0) (T3 := T2) (L := L \u dom G); try assumption; eauto.
+    -- apply IHHsub with (S3 := S2) (T2 := T0) (L := L \u dom G); try assumption; auto.
+       introv Hn. apply notin_union in Hn. destruct Hn as [Hn1 Hn2].
+       pose proof (precise_to_general3 H) as Hpq.
+       pose proof (precise_to_general3 H0) as Hq.
+       specialize (Htrans2 _ Hn1).
+       assert (G & x ~ S2 ⊢ open_typ x T2 <: open_typ x T0). {
+        destruct repl_swap as [repl_swap _]. apply repl_swap in H6.
+        apply subtyp_sngl_pq with (p := p) (q := q) (U := U).
+        + apply weaken_ty_trm; try assumption. eauto.
+        + apply weaken_ty_trm; try assumption. eauto.
+        + apply repl_open_var.
+          apply H6.
+          ++ eapply typed_paths_named. apply Hpq.
+          ++ eapply typed_paths_named. apply Hq.
+      }
+      eapply subtyp_trans. apply Htrans2. auto.
   - (* sel2 *)
+    eauto.
   - (* sel1 *)
+    inversion Heqall2.
   - (* all *)
-
+    inversion Heqall2. subst.
+    clear Heqall2.
+    apply subtyp_all_s with (L := L \u L0 \u dom G).
+    -- eauto.
+    -- introv Hn.
+       apply notin_union in Hn. destruct Hn as [Hn1 Hn2].
+       apply notin_union in Hn2. destruct Hn2 as [Hn2 Hn3].
+       pose proof (H0 _ Hn1) as H0.
+       pose proof (Htrans2 _ Hn2) as H1.
+       apply tight_to_general in H.
+       assert (G & x ~ S2 ⊢ open_typ x T1 <: open_typ x T3) as H2.
+       {
+         eapply narrow_subtyping.
+         - apply H1.
+         - eapply subenv_push.
+           -- auto.
+           -- eauto.
+           -- eauto.
+           -- auto.
+       }
+       eapply subtyp_trans. apply H2. apply H0.
+Qed.
 
 Theorem trans_subtyp_s : forall G S T U,
     inert G ->
@@ -755,9 +814,36 @@ Proof.
     specialize (IHsubtyp_s Hi).
     eauto.
   - (* all *)
-    admit.
-Admitted.
+    eapply trans_subtyp_all_s; try assumption.
+    apply H.
+    apply H0.
+    apply H2.
+Qed.
 
+
+Theorem semantic_to_tight : forall G S T,
+    G ⊢{} S <: T -> G ⊢# S <: T.
+Proof.
+  introv H. induction H; eauto.
+  - apply subtyp_trans_t with (T := S).
+    -- destruct repl_swap as [Hr _]. apply Hr in H1.
+       eauto.
+    -- auto.
+  - apply subtyp_trans_t with (T := S).
+    -- destruct repl_swap as [Hr _]. apply Hr in H1.
+       eauto.
+    -- auto.
+Qed.
+
+
+Theorem tight_to_semantic : forall G S T,
+    inert G ->
+    G ⊢# S <: T -> G ⊢{} S <: T.
+Proof.
+  introv Hi H.
+  induction H; eauto.
+  apply trans_subtyp_s with (T := T); auto.
+Qed.
 
   (* - (* top *) *)
   (* - (* bot *) *)
