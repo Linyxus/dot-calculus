@@ -8,7 +8,7 @@
 
 
 Require Import Coq.Program.Equality.
-Require Import Definitions RecordAndInertTypes PreciseTyping TightTyping InvertibleTyping Narrowing Replacement Binding.
+Require Import Definitions RecordAndInertTypes PreciseTyping TightTyping InvertibleTyping Narrowing Replacement Binding Subenvironments Weakening.
 
 Reserved Notation "G '⊢{}' T '<:' U" (at level 40, T at level 59).
 Reserved Notation "G '⊢{}s' T '<:' U" (at level 40, T at level 59).
@@ -616,6 +616,82 @@ Proof.
   - (* all *)
     inversion Heqtyp2.
 Qed.
+
+
+Lemma trans_subtyp_all_s : forall G L S1 S2 T1 T2 U,
+    inert G ->
+    G ⊢# S2 <: S1 ->
+    (forall x, x \notin L -> G & x ~ S2 ⊢ open_typ x T1 <: open_typ x T2) ->
+    G ⊢{} typ_all S2 T2 <: U ->
+    G ⊢{} typ_all S1 T1 <: U.
+Proof.
+  introv Hi Htrans1 Htrans2 Hsub.
+  remember (typ_all S2 T2) as all2 in Hsub.
+  gen S2 T2 L.
+  induction Hsub; intros.
+  - (* top *)
+    auto.
+  - (* bot *)
+    inversion Heqall2.
+  - (* refl *)
+    subst. eauto.
+  - (* and11 *)
+    inversion Heqall2.
+  - (* and12 *)
+    inversion Heqall2.
+  - (* and2 *)
+    specialize (IHHsub1 Hi S2 Htrans1 T2 Heqall2 L Htrans2).
+    specialize (IHHsub2 Hi S2 Htrans1 T2 Heqall2 L Htrans2).
+    eauto.
+  - (* fld *)
+    inversion Heqall2.
+  - (* typ *)
+    inversion Heqall2.
+  - (* sngl_pq2 *)
+    eauto.
+  - (* sngl_qp2 *)
+    eauto.
+  - (* sngl_pq1 *)
+    specialize (IHHsub Hi).
+    subst S'. inversion H1; subst.
+    -- assert (forall x, x \notin (L \u dom G) -> G & x ~ T0 ⊢ open_typ x T1 <: open_typ x T2).
+       {
+         introv Hnin.
+         apply notin_union in Hnin.
+         destruct Hnin as [Hn1 Hn2].
+         specialize (Htrans2 _ Hn1).
+         eapply narrow_subtyping.
+         - apply Htrans2.
+         - apply subenv_push.
+           -- auto.
+           -- eauto.
+           -- eauto.
+           -- pose proof (precise_to_general3 H) as Hpq.
+              pose proof (precise_to_general3 H0) as Hq.
+              eapply subtyp_sngl_pq.
+              apply Hpq. apply Hq. assumption.
+       }
+       apply IHHsub with (S2 := T0) (T3 := T2) (L := L \u dom G); try assumption; eauto.
+    -- apply IHHsub with (S3 := S2) (T2 := T0) (L := L \u dom G); try assumption; auto.
+       introv Hn. apply notin_union in Hn. destruct Hn as [Hn1 Hn2].
+       pose proof (precise_to_general3 H) as Hpq.
+       pose proof (precise_to_general3 H0) as Hq.
+       specialize (Htrans2 _ Hn1).
+       assert (G & x ~ S2 ⊢ open_typ x T2 <: open_typ x T0). {
+        apply subtyp_sngl_qp with (p := p) (q := q) (U := U).
+        + apply weaken_ty_trm; try assumption. eauto.
+        + apply weaken_ty_trm; try assumption. eauto.
+        + apply repl_open_var.
+          destruct repl_swap as [repl_swap _]. apply repl_swap in H6.
+          apply H6.
+          ++ eapply typed_paths_named. apply Hq.
+          ++ eapply typed_paths_named. apply Hpq.
+      }
+      eapply subtyp_trans. apply Htrans2. auto.
+  - (* sngl_qp1 *)
+  - (* sel2 *)
+  - (* sel1 *)
+  - (* all *)
 
 
 Theorem trans_subtyp_s : forall G S T U,
