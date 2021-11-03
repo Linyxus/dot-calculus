@@ -412,12 +412,76 @@ Proof.
 Qed.
 
 
+Lemma trans_subtyp_fld_s : forall G a S T U,
+    inert G ->
+    (forall U1, G ⊢{} T <: U1 -> G ⊢{} S <: U1) ->
+    G ⊢{} typ_rcd {a ⦂ T} <: U ->
+    G ⊢{} typ_rcd {a ⦂ S} <: U.
+Proof.
+  introv Hi H Hs.
+  remember (typ_rcd {a ⦂ T}) as Fld.
+  rename HeqFld into He.
+  gen T.
+  induction Hs; introv Htrans He.
+  - (* top *)
+    auto.
+  - (* bot *)
+    inversion He.
+  - (* refl *)
+    subst T. eauto.
+  - (* and11 *)
+    inversion He.
+  - (* and12 *)
+    inversion He.
+  - (* and2 *)
+    specialize (IHHs1 Hi T0 Htrans He).
+    specialize (IHHs2 Hi T0 Htrans He).
+    eauto.
+  - (* fld *)
+    inversion He; subst.
+    eauto.
+  - (* typ *)
+    inversion He.
+  - (* sngl_pq2 *)
+    eauto.
+  - (* sngl_qp2 *)
+    eauto.
+  - (* sngl_pq1 *)
+    specialize (IHHs Hi).
+    subst S'. inversion H1. subst.
+    inversion H6. subst.
+    specialize (IHHs T1).
+    apply IHHs.
+    -- introv Hsub.
+       eauto.
+    -- trivial.
+  - (* sngl_qp1 *)
+    specialize (IHHs Hi).
+    subst S'. inversion H1. subst.
+    inversion H6. subst.
+    specialize (IHHs T1).
+    apply IHHs.
+    -- introv Hsub.
+       eauto.
+    -- trivial.
+  - (* sel2 *)
+    subst S0.
+    specialize (IHHs Hi T0 Htrans).
+    eauto.
+  - (* sel1 *)
+    inversion He.
+  - (* all *)
+    inversion He.
+Qed.
+
+
 Theorem trans_subtyp_s : forall G S T U,
+    inert G ->
     G ⊢{} S <: T ->
     G ⊢{} T <: U ->
     G ⊢{} S <: U.
 Proof.
-  intros G S T U H1 H2.
+  introv Hi H1 H2.
   generalize dependent U.
   induction H1; intros.
   - (* top *)
@@ -428,25 +492,32 @@ Proof.
   - (* and11 *)
     apply subtyp_and11_s.
     apply IHsubtyp_s.
+    exact Hi.
     auto.
   - (* and12 *)
     apply subtyp_and12_s.
-    apply IHsubtyp_s.
-    auto.
+    apply IHsubtyp_s; auto.
   - (* and2 *)
     eapply trans_subtyp_and2_s.
     apply IHsubtyp_s1.
+    exact Hi.
     apply IHsubtyp_s2.
+    exact Hi.
     apply H2.
-  - (* fld *) admit.
+  - (* fld *)
+    specialize (IHsubtyp_s Hi).
+    eapply trans_subtyp_fld_s.
+    -- exact Hi.
+    -- apply IHsubtyp_s.
+    -- exact H2.
   - (* typ *) admit.
   - (* sngl_pq2 *)
-    apply IHsubtyp_s.
+    apply IHsubtyp_s. exact Hi.
     destruct repl_swap as [Hr _].
     apply Hr in H1.
     eauto.
   - (* sngl_qp2 *)
-    apply IHsubtyp_s.
+    apply IHsubtyp_s. exact Hi.
     destruct repl_swap as [Hr _].
     apply Hr in H1.
     eauto.
@@ -455,6 +526,8 @@ Proof.
   - (* sngl_qp1 *)
     eauto.
   - (* sel2 *)
+    pose proof (invert_subtyp_sel2_p _ _ _ _ _ Hi H H2).
+    eauto.
   - (* sel1 *)
     admit.
   - (* all *)
