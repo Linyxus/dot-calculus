@@ -11,7 +11,7 @@ Set Implicit Arguments.
 Require Import Sequences.
 Require Import Coq.Program.Equality.
 Require Import Definitions RecordAndInertTypes PreciseTyping TightTyping InvertibleTyping
-        Narrowing Replacement ReplacementTyping.
+        Narrowing Replacement ReplacementTyping GADTRules.
 
 (** ** Sel-<: Replacement *)
 
@@ -118,6 +118,10 @@ Proof.
   intros G0 Hi.
   apply ts_mutind; intros; subst;
     try solve [eapply sel_replacement; auto]; eauto.
+  - assert (G0 = G0) as He by trivial. specialize (H He).
+    pose proof (invert_subtyp_typ_t _ _ _ _ _ _ Hi H) as [Hg1 Hg2]. auto.
+  - assert (G0 = G0) as He by trivial. specialize (H He).
+    pose proof (invert_subtyp_typ_t _ _ _ _ _ _ Hi H) as [Hg1 Hg2]. auto.
   - destruct* (sngl_replacement Hi (H eq_refl) (H0 eq_refl) r).
   - apply repl_swap in r. destruct* (sngl_replacement Hi (H eq_refl) (H0 eq_refl) r).
 Qed.
