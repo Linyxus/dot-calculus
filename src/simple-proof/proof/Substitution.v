@@ -7,7 +7,7 @@
 Set Implicit Arguments.
 
 Require Import String.
-Require Import Definitions Binding Weakening.
+Require Import Definitions Binding Weakening Decompose.
 
 Ltac subst_open_fresh :=
   repeat match goal with
@@ -45,10 +45,6 @@ Ltac fold_subst :=
         asserts_rewrite (open_typ (If x = y then z else x) (subst_typ y z T)
                      = subst_typ y z (open_typ x T)); auto  end.
 
-Lemma subst_thru_rcd_has_uniq_tm : forall U A S T x y,
-    rcd_has_uniq_tm U A S T ->
-    rcd_has_uniq_tm (subst_typ x y U) A (subst_typ x y S) (subst_typ x y T).
-Admitted.
 
 (** * Substitution Lemma *)
 (** [G1, x: S, G2 ⊢ t: T]            #<br>#
