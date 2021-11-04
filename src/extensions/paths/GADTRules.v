@@ -127,3 +127,36 @@ Proof.
   apply tight_to_semantic; eauto.
 Qed.
 
+(** * Unique typing *)
+
+Notation "U '⤳' S" :=
+  (exists ls, rcd_with_unique_typ U ls S) (at level 60).
+
+Lemma invert_subtyp_and2_s : forall G S T U,
+    G ⊢{} S <: typ_and T U ->
+    G ⊢{} S <: T /\ G ⊢{} S <: U.
+Proof.
+  introv H.
+Admitted.
+
+
+Lemma reduce_subtyp_rcd2_s : forall G U1 U2 A S T,
+    G ⊢{} U1 <: U2 ->
+    U2 ⤳ typ_rcd {A >: S <: T} ->
+    G ⊢{} U1 <: typ_rcd {A >: S <: T}.
+Proof.
+  introv Hs [ls Hu].
+  remember (typ_rcd {A >: S <: T}) as typ.
+  induction Hu.
+  - (* typ *)
+    inversion Heqtyp; subst; clear Heqtyp. auto.
+  - (* fld *)
+    inversion Heqtyp.
+  - (* andl *)
+  - (* andr *)
+
+
+  (* - (* typ *) *)
+  (* - (* fld *) *)
+  (* - (* andl *) *)
+  (* - (* andr *) *)

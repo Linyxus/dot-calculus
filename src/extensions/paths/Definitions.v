@@ -557,6 +557,34 @@ Inductive inert : ctx -> Prop :=
       x # G ->
       inert (G & x ~ T).
 
+
+(** ** Unique Flow *)
+
+Inductive rcd_with_unique_typ : typ -> fset typ_label -> typ -> Prop :=
+
+| rcd_typ : forall A S T,
+    rcd_with_unique_typ (typ_rcd (dec_typ A S T)) \{A} (typ_rcd (dec_typ A S T))
+
+| rcd_fld : forall a T,
+    rcd_with_unique_typ (typ_rcd (dec_trm a T)) \{} (typ_rcd (dec_trm a T))
+
+| rcd_andl : forall U1 U2 L1 L2 T1 T2,
+    rcd_with_unique_typ U1 L1 T1 ->
+    rcd_with_unique_typ U2 L2 T2 ->
+    disjoint L1 L2 ->
+    rcd_with_unique_typ (typ_and U1 U2) (L1 \u L2) T1
+
+| rcd_andr : forall U1 U2 L1 L2 T1 T2,
+    rcd_with_unique_typ U1 L1 T1 ->
+    rcd_with_unique_typ U2 L2 T2 ->
+    disjoint L1 L2 ->
+    rcd_with_unique_typ (typ_and U1 U2) (L1 \u L2) T2
+
+.
+
+Hint Constructors rcd_with_unique_typ.
+
+
 (** ** Typing Rules *)
 
 (** The [tight_bounds] function ensures that all type declarations nested inside a
