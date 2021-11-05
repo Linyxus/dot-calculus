@@ -6,7 +6,7 @@
 
 Require Import Coq.Program.Equality.
 Require Import Definitions TightTyping SemanticSubtyping PreciseTyping.
-Require Import Replacement.
+Require Import Replacement Binding.
 
 
 Lemma subtyp_sngl_pq1_t : forall G p q S S' T U,
@@ -179,9 +179,6 @@ Qed.
 
 (** * Unique typing *)
 
-Notation "U '⤳' S" :=
-  (exists ls, rcd_with_unique_typ U ls S) (at level 60).
-
 Lemma invert_subtyp_and2_s : forall G S T U,
     G ⊢{} S <: typ_and T U ->
     G ⊢{} S <: T /\ G ⊢{} S <: U.
@@ -253,7 +250,7 @@ Qed.
 
 Lemma reduce_subtyp_rcd2_s : forall G U1 U2 A S T,
     G ⊢{} U1 <: U2 ->
-    U2 ⤳ typ_rcd {A >: S <: T} ->
+    U2 ↘ typ_rcd {A >: S <: T} ->
     G ⊢{} U1 <: typ_rcd {A >: S <: T}.
 Proof.
   introv Hs [ls Hu].
@@ -438,7 +435,7 @@ Qed.
 
 Lemma reduce_subtyp_rcd1_s : forall G U1 A S1 T1 S2 T2,
     G ⊢{} U1 <: typ_rcd {A >: S2 <: T2} ->
-    U1 ⤳ typ_rcd {A >: S1 <: T1} ->
+    U1 ↘ typ_rcd {A >: S1 <: T1} ->
     G ⊢{} typ_rcd {A >: S1 <: T1} <: typ_rcd {A >: S2 <: T2}.
 Proof.
   introv Hs [ls Hu].
@@ -470,8 +467,8 @@ Qed.
 
 
 Lemma reduce_subtyp_rcd_both_s : forall G U1 U2 A S1 T1 S2 T2,
-    U1 ⤳ typ_rcd {A >: S1 <: T1} ->
-    U2 ⤳ typ_rcd {A >: S2 <: T2} ->
+    U1 ↘ typ_rcd {A >: S1 <: T1} ->
+    U2 ↘ typ_rcd {A >: S2 <: T2} ->
     G ⊢{} U1 <: U2 ->
     G ⊢{} typ_rcd {A >: S1 <: T1} <: typ_rcd {A >: S2 <: T2}.
 Proof.
@@ -483,8 +480,8 @@ Qed.
 
 
 Lemma invert_subtyp_rcd_s : forall G U1 U2 A S1 T1 S2 T2,
-    U1 ⤳ typ_rcd {A >: S1 <: T1} ->
-    U2 ⤳ typ_rcd {A >: S2 <: T2} ->
+    U1 ↘ typ_rcd {A >: S1 <: T1} ->
+    U2 ↘ typ_rcd {A >: S2 <: T2} ->
     G ⊢{} U1 <: U2 ->
     G ⊢# S2 <: S1 /\ G ⊢# T1 <: T2.
 Proof.
@@ -496,14 +493,29 @@ Qed.
 
 Lemma invert_subtyp_rcd_t : forall G U1 U2 A S1 T1 S2 T2,
     inert G ->
-    U1 ⤳ typ_rcd {A >: S1 <: T1} ->
-    U2 ⤳ typ_rcd {A >: S2 <: T2} ->
+    U1 ↘ typ_rcd {A >: S1 <: T1} ->
+    U2 ↘ typ_rcd {A >: S2 <: T2} ->
     G ⊢# U1 <: U2 ->
     G ⊢# S2 <: S1 /\ G ⊢# T1 <: T2.
 Proof.
   introv Hi Hu1 Hu2 Hsub.
   apply* invert_subtyp_rcd_s.
   apply* tight_to_semantic.
+Qed.
+
+Lemma subst_typ_rcd_with_unique_typ : forall x p U L T,
+    rcd_with_unique_typ U L T ->
+    rcd_with_unique_typ (subst_typ x p U) L (subst_typ x p T).
+Proof.
+  introv Hu. induction Hu; simpl; eauto.
+Qed.
+
+Lemma subst_typ_rcd_has_unique_typ : forall x p U T,
+    U ↘ T ->
+    subst_typ x p U ↘ subst_typ x p T.
+Proof.
+  introv [ls H]. exists ls.
+  apply* subst_typ_rcd_with_unique_typ.
 Qed.
 
   (* - (* typ *) *)

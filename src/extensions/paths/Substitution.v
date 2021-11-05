@@ -5,7 +5,7 @@
 Set Implicit Arguments.
 
 Require Import List Coq.Program.Equality String.
-Require Import Definitions Binding Replacement Weakening.
+Require Import Definitions Binding Replacement Weakening GADTRules.
 
 Ltac subst_open_fresh :=
   match goal with
@@ -259,6 +259,20 @@ Proof.
     * eapply H; eauto.
     * eapply H0; eauto.
     * eapply subst_defs_hasnt_label. apply d0.
+  - (* subtyp_rcd_inv1 *)
+    eapply subtyp_rcd_inv1.
+    -- apply* H.
+    -- pose proof (subst_typ_rcd_has_unique_typ x p _ _ e) as Hg.
+       exact Hg.
+    -- pose proof (subst_typ_rcd_has_unique_typ x p _ _ e0) as Hg.
+       exact Hg.
+  - (* subtyp_rcd_inv1 *)
+    eapply subtyp_rcd_inv2.
+    -- apply* H.
+    -- pose proof (subst_typ_rcd_has_unique_typ x p _ _ e) as Hg.
+       exact Hg.
+    -- pose proof (subst_typ_rcd_has_unique_typ x p _ _ e0) as Hg.
+       exact Hg.
   - Case "subtyp_sngl_pq"%string.
     subst_tydef_solver.
     eapply subtyp_sngl_pq; eauto.
