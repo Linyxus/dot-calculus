@@ -185,3 +185,98 @@ Proof.
     apply Hs.
 Qed.
 
+
+(** ** Substitution for rcd_has_uniq_tm *)
+
+
+Lemma subst_rcd_with_unique_typ_ls_stable : forall x y U L1 T1 L2 T2,
+    rcd_with_unique_typ U L1 T1 ->
+    rcd_with_unique_typ (subst_typ x y U) L2 T2 ->
+    L1 = L2.
+Proof.
+  introv H1 H2.
+  gen L2 T2.
+  induction H1; introv H2.
+  - (* typ *)
+    inversion H2; subst; auto.
+  - (* fld *)
+    inversion H2; subst; auto.
+  - (* andl *)
+    inversion H2; subst.
+    -- specialize (IHrcd_with_unique_typ1 _ _ H3).
+       specialize (IHrcd_with_unique_typ2 _ _ H4).
+       subst. trivial.
+    -- specialize (IHrcd_with_unique_typ1 _ _ H3).
+       specialize (IHrcd_with_unique_typ2 _ _ H4).
+       subst. trivial.
+  - (* andr *)
+    inversion H2; subst.
+    -- specialize (IHrcd_with_unique_typ1 _ _ H3).
+       specialize (IHrcd_with_unique_typ2 _ _ H4). subst. auto.
+    -- specialize (IHrcd_with_unique_typ1 _ _ H3).
+       specialize (IHrcd_with_unique_typ2 _ _ H4). subst. auto.
+Qed.
+
+
+Lemma subst_rcd_with_unique_typ_ls_stable' : forall x y U L T1,
+    rcd_with_unique_typ U L T1 ->
+    (exists T2, rcd_with_unique_typ (subst_typ x y U) L T2).
+Proof.
+  introv H.
+  induction H.
+  - simpl. exists (typ_rcd (dec_typ A (subst_typ x y S) (subst_typ x y T))). eauto.
+  - simpl. exists (typ_rcd (dec_trm a (subst_typ x y T))). eauto.
+  - simpl.
+    destruct IHrcd_with_unique_typ1 as [T3 IH1].
+    destruct IHrcd_with_unique_typ2 as [T4 IH2].
+    exists T3. eauto.
+  - simpl.
+    destruct IHrcd_with_unique_typ1 as [T3 IH1].
+    destruct IHrcd_with_unique_typ2 as [T4 IH2].
+    exists T3. eauto.
+Qed.
+
+
+Lemma subst_thru_rcd_has_uniq_tm : forall U A S T x y,
+    rcd_has_uniq_tm U A S T ->
+    rcd_has_uniq_tm (subst_typ x y U) A (subst_typ x y S) (subst_typ x y T).
+Proof.
+  introv [ls Hu].
+  remember (typ_rcd (dec_typ A S T)) as typ1 in Hu. rename Heqtyp1 into He.
+  gen A S T.
+  induction Hu; introv He.
+  - (* typ *)
+    simpl. inversion He; subst.
+    exists (\{A0}). eauto.
+  - (* fld *) inversion He.
+  - (* andl *)
+    specialize (IHHu1 _ _ _ He).
+    simpl.
+    destruct IHHu1 as [L0 IHHu1].
+    pose proof (subst_rcd_with_unique_typ_ls_stable' x y Hu2) as [T2' Hu2'].
+    exists (L0 \u L2). eapply rcd_andl.
+    -- apply IHHu1.
+    -- exact Hu2'.
+    -- assert (L1 = L0) as Heql.
+       {
+         eapply subst_rcd_with_unique_typ_ls_stable.
+         - apply Hu1.
+         - apply IHHu1.
+       }
+       subst. auto.
+  - (* andr *)
+    specialize (IHHu2 _ _ _ He).
+    simpl.
+    destruct IHHu2 as [L0 IHHu2].
+    pose proof (subst_rcd_with_unique_typ_ls_stable' x y Hu1) as [T1' Hu1'].
+    exists (L1 \u L0). eapply rcd_andr.
+    -- exact Hu1'.
+    -- apply IHHu2.
+    -- assert (L2 = L0) as Heql.
+       {
+         eapply subst_rcd_with_unique_typ_ls_stable.
+         - apply Hu2.
+         - apply IHHu2.
+       }
+       subst. auto.
+Qed.

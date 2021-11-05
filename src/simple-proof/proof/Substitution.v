@@ -7,7 +7,7 @@
 Set Implicit Arguments.
 
 Require Import String.
-Require Import Definitions Binding Weakening.
+Require Import Definitions Binding Weakening Decompose.
 
 Ltac subst_open_fresh :=
   repeat match goal with
@@ -44,6 +44,7 @@ Ltac fold_subst :=
     | [ |- context [ open_typ (If ?x = ?y then ?z else ?x) (subst_typ ?y ?z ?T) ] ] =>
         asserts_rewrite (open_typ (If x = y then z else x) (subst_typ y z T)
                      = subst_typ y z (open_typ x T)); auto  end.
+
 
 (** * Substitution Lemma *)
 (** [G1, x: S, G2 ⊢ t: T]            #<br>#
@@ -123,6 +124,14 @@ Proof.
     rewrite subst_open_commut_typ. auto. eauto.
   - Case "ty_defs_cons"%string.
     constructor*. rewrite <- subst_label_of_def. apply* subst_defs_hasnt.
+  - eapply subtyp_rcd_inv1.
+    + apply* H.
+    + apply* subst_thru_rcd_has_uniq_tm.
+    + apply* subst_thru_rcd_has_uniq_tm.
+  - eapply subtyp_rcd_inv2.
+    + apply* H.
+    + apply* subst_thru_rcd_has_uniq_tm.
+    + apply* subst_thru_rcd_has_uniq_tm.
 Qed.
 
 (** The substitution lemma for term typing.
