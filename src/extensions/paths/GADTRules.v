@@ -266,7 +266,8 @@ Proof.
   - (* andr *)
     apply invert_subtyp_and2_s in Hs as [Hs1 Hs2].
     eauto.
-Qed.
+  - admit.
+Admitted.
 
 
 Lemma rcd_with_unique_typ_in_label : forall U L A S T,
@@ -275,7 +276,7 @@ Lemma rcd_with_unique_typ_in_label : forall U L A S T,
 Proof.
   introv H.
   remember (typ_rcd (dec_typ A S T)) as T1.
-  induction H.
+  induction H; auto.
   - (* typ *) inversion HeqT1. subst. apply in_singleton_self.
   - (* fld *) inversion HeqT1.
   - (* andl *)
@@ -430,7 +431,8 @@ Proof.
     destruct Ha.
     -- specialize (IHrcd_with_unique_typ1 Hn1 H0). contradiction.
     -- specialize (IHrcd_with_unique_typ2 Hn2 H0). contradiction.
-Qed.
+  - admit.
+Admitted.
 
 
 Lemma reduce_subtyp_rcd1_s : forall G U1 A S1 T1 S2 T2,
@@ -463,7 +465,8 @@ Proof.
        contradict Hs. eapply rcd_with_unique_typ_notin_labels.
        apply Hu1. apply Hni.
     -- auto.
-Qed.
+  - admit.
+Admitted.
 
 
 Lemma reduce_subtyp_rcd_both_s : forall G U1 U2 A S1 T1 S2 T2,

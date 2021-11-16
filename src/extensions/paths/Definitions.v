@@ -580,6 +580,10 @@ Inductive rcd_with_unique_typ : typ -> fset typ_label -> typ -> Prop :=
     disjoint L1 L2 ->
     rcd_with_unique_typ (typ_and U1 U2) (L1 \u L2) T2
 
+| rcd_rec : forall U L T,
+    rcd_with_unique_typ U L T ->
+    rcd_with_unique_typ (μ U) L T
+
 .
 
 Hint Constructors rcd_with_unique_typ.
